@@ -12,7 +12,6 @@ A Naive Bayes text classifier written in Go using only the standard library. The
 * **Evaluation Metrics:** Calculates a confusion matrix, Accuracy, Precision, Recall, and F1 Score against a 20% validation split during the training phase.
 
 ``` bash
-```
 === Model Evaluation Dashboard ===
 Total Tested : 38771
 
