@@ -11,6 +11,8 @@ A Naive Bayes text classifier written in Go using only the standard library. The
 * **Inference CLI:** A command-line tool that loads the `.gob` file to classify raw strings or text files.
 * **Evaluation Metrics:** Calculates a confusion matrix, Accuracy, Precision, Recall, and F1 Score against a 20% validation split during the training phase.
 
+``` bash
+```
 === Model Evaluation Dashboard ===
 Total Tested : 38771
 
@@ -24,6 +26,7 @@ Precision : 0.9816
 Recall    : 0.9396
 F1 Score  : 0.9602
 ==================================
+```
 
 
 ## Dataset
