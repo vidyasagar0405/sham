@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"os"
 	"strings"
+	"sync"
 )
 
 // TYPES
@@ -205,23 +206,35 @@ func CalcStats(testRecords dataset, spamLogs, hamLogs Model, defaultSpam, defaul
 	fp := 0.0 // False Positive: Model guessed Spam, actually Ham
 	fn := 0.0 // False Negative: Model guessed Ham, actually Spam
 
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+
 	for _, e := range testRecords {
-		pemailSpam, pemailHam := pEmail(e, spamLogs, hamLogs, defaultSpam, defaultHam, pSpamRecord, pHamRecord)
+		wg.Add(1)
 
-		trueClass := e.Class
-		predictClass := WhatIsIt(pemailSpam, pemailHam)
+		go func(e Record) {
+			defer wg.Done()
+			pemailSpam, pemailHam := pEmail(e, spamLogs, hamLogs, defaultSpam, defaultHam, pSpamRecord, pHamRecord)
 
-		// Populate the matrix
-		if predictClass == Spam && trueClass == Spam {
-			tp++
-		} else if predictClass == Ham && trueClass == Ham {
-			tn++
-		} else if predictClass == Spam && trueClass == Ham {
-			fp++
-		} else if predictClass == Ham && trueClass == Spam {
-			fn++
-		}
+			trueClass := e.Class
+			predictClass := WhatIsIt(pemailSpam, pemailHam)
+
+			// Populate the matrix
+			mu.Lock()
+			if predictClass == Spam && trueClass == Spam {
+				tp++
+			} else if predictClass == Ham && trueClass == Ham {
+				tn++
+			} else if predictClass == Spam && trueClass == Ham {
+				fp++
+			} else if predictClass == Ham && trueClass == Spam {
+				fn++
+			}
+			mu.Unlock()
+		}(e)
 	}
+
+	wg.Wait()
 
 	// Calculate the standard ML metrics
 	// Accuracy: (TP + TN) / Total

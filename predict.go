@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 )
 
 // We redefine the exact same struct we used to save the model
@@ -81,13 +82,24 @@ func main() {
 
 	modelData := LoadModel(*modelPath)
 
-	for _, filename := range args {
-		content, err := os.ReadFile(filename)
-		if err != nil {
-			fmt.Printf("[\033[33mERROR\033[0m] Skipping %s: %v\n", filename, err)
-			continue
-		}
+	var wg sync.WaitGroup
 
-		Predict(filename, string(content), modelData)
+	for _, filename := range args {
+
+		wg.Add(1)
+
+		go func(filename string) {
+
+			defer wg.Done()
+			content, err := os.ReadFile(filename)
+			if err != nil {
+				fmt.Printf("[\033[33mERROR\033[0m] Skipping %s: %v\n", filename, err)
+				return
+			}
+
+			Predict(filename, string(content), modelData)
+		}(filename)
+
+		wg.Wait()
 	}
 }
